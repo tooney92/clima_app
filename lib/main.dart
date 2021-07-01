@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:clima_app/screens/loading_screen.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() async {
-  await dotenv.load(fileName: ".env");
-  runApp(MyApp());
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
