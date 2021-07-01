@@ -30,3 +30,10 @@
 //   String result = 'task 3 data';
 //   print('task 3 complete with $task2Data');
 // }
+
+void main() {}
+
+class Toy {
+  String name;
+  Toy(this.name);
+}

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import '../services/location.dart';
+import 'dart:convert';
+import '../utilities/constants.dart';
+import '../services/networking.dart';
 
 // Future<Position> _determinePosition() async {
 //   bool serviceEnabled;
@@ -46,21 +48,34 @@ class LoadingScreen extends StatefulWidget {
 
 class _LoadingScreenState extends State<LoadingScreen> {
   String? location;
+  late double latitude;
+  late double longitude;
 
-  void getLocation() async {
+  void getLocationData() async {
     try {
       Location userLocation = Location();
       await userLocation.getCurrentLocation();
-      print('${userLocation.latitude}, ${userLocation.longtitude}');
+      latitude = userLocation.latitude;
+      longitude = userLocation.longtitude;
+      var url = Uri.parse(
+          'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&mode=json&appid=$apiKey');
+
+      NetworkHelper networkHelper = NetworkHelper(url);
+
+      var weatherData = await networkHelper.getData();
+      double temperature = weatherData['main']['temp'];
+      int condition = weatherData['weather'][0]['id'];
+      String cityName = weatherData['name'];
+      print('$condition, $cityName, $temperature');
     } catch (e) {
-      print(e);
+      print('Error: $e');
     }
   }
 
   @override
   void initState() {
     super.initState();
-    getLocation();
+    getLocationData();
   }
 
   @override
@@ -69,8 +84,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
       body: Center(
         child: ElevatedButton(
           onPressed: () {
-            //Get the current location
-            getLocation();
+            getLocationData();
           },
           child: Text('Get Location'),
           // child: Text(''),
