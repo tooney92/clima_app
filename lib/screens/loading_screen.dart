@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import '../services/location.dart';
-import 'dart:convert';
-import '../utilities/constants.dart';
-import '../services/networking.dart';
+// import '../services/location.dart';
+// import '../services/networking.dart';
+import '../services/weather.dart';
+// import 'dart:convert';
+// import '../utilities/constants.dart';
+import '../screens/location_screen.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 // Future<Position> _determinePosition() async {
 //   bool serviceEnabled;
@@ -48,47 +51,43 @@ class LoadingScreen extends StatefulWidget {
 
 class _LoadingScreenState extends State<LoadingScreen> {
   String? location;
-  late double latitude;
-  late double longitude;
-
-  void getLocationData() async {
-    try {
-      Location userLocation = Location();
-      await userLocation.getCurrentLocation();
-      latitude = userLocation.latitude;
-      longitude = userLocation.longtitude;
-      var url = Uri.parse(
-          'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&mode=json&appid=$apiKey');
-
-      NetworkHelper networkHelper = NetworkHelper(url);
-
-      var weatherData = await networkHelper.getData();
-      double temperature = weatherData['main']['temp'];
-      int condition = weatherData['weather'][0]['id'];
-      String cityName = weatherData['name'];
-      print('$condition, $cityName, $temperature');
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     getLocationData();
   }
 
+  void getLocationData() async {
+    try {
+      WeatherModel weatherModel = WeatherModel();
+      var weatherData = await weatherModel.getLocationWeather();
+      print(weatherData);
+      print("hello");
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return LocationScreen(locationWeather: weatherData);
+      }));
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            getLocationData();
-          },
-          child: Text('Get Location'),
-          // child: Text(''),
-        ),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const <Widget>[
+              SpinKitFadingCircle(
+                size: 150.0,
+                color: Colors.white,
+                duration: const Duration(milliseconds: 2000),
+              ),
+              Padding(
+                padding: EdgeInsets.all(38.0),
+                child: Text("fetching your weather data..."),
+              )
+            ]),
       ),
     );
   }
