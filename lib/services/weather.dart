@@ -10,6 +10,7 @@ class WeatherModel {
         'https://api.openweathermap.org/data/2.5/weather?lat=${userLocation.latitude}&lon=${userLocation.longtitude}&mode=json&appid=$apiKey&units=metric');
     NetworkHelper networkHelper = NetworkHelper(url);
     var weatherData = await networkHelper.getData();
+    print('data is: $weatherData');
     return weatherData;
   }
 

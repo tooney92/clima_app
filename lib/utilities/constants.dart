@@ -13,8 +13,14 @@ const kMessageTextStyle = TextStyle(
   fontSize: 40.0,
 );
 
+const kErrorWeatherMessageTextStyle = TextStyle(
+  fontFamily: 'Spartan MB',
+  fontSize: 20.0,
+);
+
 const kButtonTextStyle = TextStyle(
   fontSize: 30.0,
+  color: Colors.white,
   fontFamily: 'Spartan MB',
 );
 

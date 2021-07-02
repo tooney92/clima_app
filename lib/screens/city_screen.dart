@@ -1,3 +1,4 @@
+import 'package:clima_app/screens/location_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:clima_app/utilities/constants.dart';
 
@@ -24,7 +25,12 @@ class _CityScreenState extends State<CityScreen> {
               Align(
                 alignment: Alignment.topLeft,
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return LocationScreen();
+                    }));
+                  },
                   child: Icon(
                     Icons.arrow_back_ios,
                     size: 50.0,
@@ -33,7 +39,20 @@ class _CityScreenState extends State<CityScreen> {
               ),
               Container(
                 padding: EdgeInsets.all(20.0),
-                child: null,
+                child: TextField(
+                  decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10.0))),
+                      filled: true,
+                      hintText: 'Enter city Name',
+                      hintStyle: TextStyle(color: Colors.grey),
+                      icon: Icon(
+                        Icons.location_city_rounded,
+                        color: Colors.white,
+                      )),
+                ),
               ),
               TextButton(
                 onPressed: () {},

@@ -1,6 +1,8 @@
+import 'package:clima_app/screens/city_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:clima_app/utilities/constants.dart';
 import '../services/weather.dart';
+import '../utilities/customExceptions.dart';
 
 class LocationScreen extends StatefulWidget {
   var locationWeather;
@@ -15,6 +17,7 @@ class _LocationScreenState extends State<LocationScreen> {
   late String weatherIcon;
   late String cityName;
   late String weatherMessage;
+  String? errorReason = "";
   WeatherModel weather = WeatherModel();
 
   @override
@@ -23,13 +26,22 @@ class _LocationScreenState extends State<LocationScreen> {
     updateUI(widget.locationWeather);
   }
 
-  void updateUI(dynamic weatherData) {
+  void updateUI(dynamic weatherData, [String? errorMessage]) {
     setState(() {
+      if (weatherData == null) {
+        temperature = 0;
+        weatherIcon = '';
+        weatherMessage = 'Unable to get weather data for your city';
+        cityName = '';
+        errorReason = 'Reason: $errorMessage';
+        return;
+      }
       temperature = weatherData['main']['temp'];
       int condition = weatherData['weather'][0]['id'];
       cityName = weatherData['name'];
       weatherIcon = weather.getWeatherIcon(condition);
-      weatherMessage = weather.getMessage(temperature.toInt());
+      weatherMessage = '${weather.getMessage(temperature.toInt())} in';
+      errorReason = "";
       print(temperature);
     });
   }
@@ -57,11 +69,18 @@ class _LocationScreenState extends State<LocationScreen> {
                 children: <Widget>[
                   TextButton(
                     onPressed: () async {
-                      var weatherData = await weather.getLocationWeather();
-                      updateUI(weatherData);
-                      // setState(() {
-                      //   updateUI(weatherData);
-                      // });
+                      try {
+                        var weatherData = await weather.getLocationWeather();
+                        updateUI(weatherData);
+                      } on LocationServiceEnabledException catch (e) {
+                        updateUI(null, e.cause);
+                      } on LocationServicePermissionException catch (e) {
+                        updateUI(null, e.cause);
+                      } on LocationServicePermanentDenialException catch (e) {
+                        updateUI(null, e.cause);
+                      } catch (e) {
+                        print(e);
+                      }
                     },
                     child: Icon(
                       Icons.near_me,
@@ -69,7 +88,12 @@ class _LocationScreenState extends State<LocationScreen> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => CityScreen()),
+                      );
+                    },
                     child: Icon(
                       Icons.location_city,
                       size: 50.0,
@@ -95,11 +119,20 @@ class _LocationScreenState extends State<LocationScreen> {
               Padding(
                 padding: EdgeInsets.only(right: 15.0),
                 child: Text(
-                  "$weatherMessage in $cityName",
+                  "$weatherMessage  $cityName",
                   textAlign: TextAlign.right,
                   style: kMessageTextStyle,
                 ),
               ),
+              SizedBox(
+                height: 10.0,
+              ),
+              Center(
+                  child: Text(
+                "$errorReason",
+                textAlign: TextAlign.center,
+                style: kErrorWeatherMessageTextStyle,
+              )),
             ],
           ),
         ),
