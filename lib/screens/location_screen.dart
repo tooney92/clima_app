@@ -15,7 +15,7 @@ class LocationScreen extends StatefulWidget {
 class _LocationScreenState extends State<LocationScreen> {
   late double temperature;
   late String weatherIcon;
-  late String cityName;
+  String cityName = "";
   late String weatherMessage;
   String? errorReason = "";
   WeatherModel weather = WeatherModel();
@@ -26,14 +26,17 @@ class _LocationScreenState extends State<LocationScreen> {
     updateUI(widget.locationWeather);
   }
 
-  void updateUI(dynamic weatherData, [String? errorMessage]) {
+  void updateUI(dynamic weatherData,
+      {String? errorMessage, String? noCityError}) {
     setState(() {
       if (weatherData == null) {
         temperature = 0;
         weatherIcon = '';
         weatherMessage = 'Unable to get weather data for your city';
         cityName = '';
-        errorReason = 'Reason: $errorMessage';
+        errorReason = errorMessage != null
+            ? 'Reason: $errorMessage'
+            : 'Reason: $noCityError';
         return;
       }
       temperature = weatherData['main']['temp'];
@@ -73,11 +76,11 @@ class _LocationScreenState extends State<LocationScreen> {
                         var weatherData = await weather.getLocationWeather();
                         updateUI(weatherData);
                       } on LocationServiceEnabledException catch (e) {
-                        updateUI(null, e.cause);
+                        updateUI(null, errorMessage: e.cause);
                       } on LocationServicePermissionException catch (e) {
-                        updateUI(null, e.cause);
+                        updateUI(null, errorMessage: e.cause);
                       } on LocationServicePermanentDenialException catch (e) {
-                        updateUI(null, e.cause);
+                        updateUI(null, errorMessage: e.cause);
                       } catch (e) {
                         print(e);
                       }
@@ -88,11 +91,18 @@ class _LocationScreenState extends State<LocationScreen> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      var typedName = await Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => CityScreen()),
                       );
+                      if (typedName != null) {
+                        // print("dem dey call me oooooo");
+                        var info = await weather.getCityData(typedName);
+                        updateUI(info,
+                            noCityError:
+                                "we could not find city data. Please check the spelling.");
+                      }
                     },
                     child: Icon(
                       Icons.location_city,
